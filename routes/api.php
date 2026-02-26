@@ -5,7 +5,10 @@ use App\Http\Controllers\BundleController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\EquipmentController;
 use App\Http\Controllers\GymController;
+use App\Http\Controllers\ResendEmailVerificationController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\VerifyEmailController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -15,9 +18,17 @@ Route::get('/getRoles', [RoleController::class, 'readAllRoles']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, 'verify'])
+    ->name('verification.verify')
+    ->middleware(['signed', 'throttle:6,1']);
+
+Route::post('/email/resend', [ResendEmailVerificationController::class, 'resend'])
+    ->middleware('throttle:6,1');
 
 //protected routes
 Route::middleware('auth:sanctum')->group(function () {
+
+    Route::get('/userInfo', [AuthController::class, 'userInfo']);
 
     Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -50,6 +61,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/getBundle/{id}', [BundleController::class, 'readBundle']);
     Route::post('/updateBundle/{id}', [BundleController::class, 'updateBundle']);
     Route::delete('/deleteBundle/{id}', [BundleController::class, 'deleteBundle']);
+
+    Route::post('/saveSubscription', [SubscriptionController::class, 'createSubscription']);
+    Route::get('/getSubscriptions', [SubscriptionController::class, 'readAllSubscriptions']);
+    Route::get('/getSubscription/{id}', [SubscriptionController::class, 'readSubscription']);
+    Route::post('/updateSubscription/{id}', [SubscriptionController::class, 'updateSubscription']);
+    Route::delete('/deleteSubscription/{id}', [SubscriptionController::class, 'deleteSubscription']);
+    
+    Route::get('/userCharges', [SubscriptionController::class, 'getUserCharges']);
 
     
 });

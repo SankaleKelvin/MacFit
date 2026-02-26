@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Notifications\VerifyEmailNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -31,9 +33,24 @@ class AuthController extends Controller
         }
         $user->user_image = $filename;
 
-        try{
+         try{
             $user->save();
-            return response()->json($user);
+
+            $signedUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            [
+                'id'=>$user->id,
+                'hash'=>sha1($user->email)
+            ]
+        );
+
+        $user->notify(new VerifyEmailNotification($signedUrl));
+
+        return response()->json([
+            'message'=>'Verification Email resent successfully.'
+        ], 200);
+
         }
         catch(\Exception $exception){
             return response()->json([
@@ -57,6 +74,12 @@ class AuthController extends Controller
             ], 401);
         }
 
+        if(!$user->is_active){
+            return response()->json([
+                'message'=>'Account is not active. Please Verify your email address.'
+            ], 403);
+        }
+
         $token = $user->createToken('auth-token')->plainTextToken;
         return response()->json([
             'message'=>'Login Successful',
@@ -70,5 +93,9 @@ class AuthController extends Controller
     public function logout(Request $request){
         $request->user()->currentAccessToken()->delete();
         return response()->json("Logout Successful");
+    }
+
+    public function userInfo(){
+        return response()->json(auth()->user());
     }
 }

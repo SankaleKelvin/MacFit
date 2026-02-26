@@ -11,6 +11,7 @@ class Bundle extends Model
         'start_time',
         'duration',
         'description',
+        'value',
         'category_id',
     ];
 }

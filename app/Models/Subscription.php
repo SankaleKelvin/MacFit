@@ -10,4 +10,12 @@ class Subscription extends Model
         'user_id',
         'bundle_id'
     ];
+
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
+
+    public function bundle(){
+        return $this->belongsTo(Bundle::class);
+    }
 }
