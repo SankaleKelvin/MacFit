@@ -8,6 +8,7 @@ use App\Http\Controllers\GymController;
 use App\Http\Controllers\ResendEmailVerificationController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Controllers\UserOtpController;
 use App\Http\Controllers\VerifyEmailController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -17,6 +18,7 @@ Route::get('/getRoles', [RoleController::class, 'readAllRoles']);
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/verify-otp', [UserOtpController::class, 'verifyOtp']);
 
 Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, 'verify'])
     ->name('verification.verify')

@@ -7,96 +7,64 @@ use Illuminate\Http\Request;
 
 class RoleController extends Controller
 {
-    //CRUD FUNCTIONS
-    //Create
-    public function createRole(Request $request){
+
+    public function createRole(Request $request)
+    {
+        $this->authorize('create', Role::class);
+
         $validated = $request->validate([
-            'name'=>'required|string|unique:roles,name',
-            'description'=>'nullable|string|max:1000'
+            'name' => 'required|string|unique:roles,name',
+            'description' => 'nullable|string|max:1000'
         ]);
 
         $role = new Role();
         $role->name = $validated['name'];
-        $role->description = $validated['description'];
-        try{
-            $role->save();
-            return response()->json([
-                'message'=>'Role Saved Successfully.'
-            ], 200);
-        }
-        catch(\Exception $exception){
-            return response()->json([
-                'error'=>'Failed to Save a Role.',
-                'message'=>$exception->getMessage()
-            ], 200);
-        }
+        $role->description = $validated['description'] ?? null;
+
+        $role->save();
+
+        return response()->json(['message' => 'Role Saved Successfully.'], 200);
     }
 
-    //Read All Roles
-    public function readAllRoles(){
-        try{
-            $roles = Role::all();
-            return response()->json($roles);
-        }
-        catch(\Exception $exception){
-            return response()->json([
-                'error'=>'Failed to fetch Roles.',
-                'message'=>$exception->getMessage()
-            ], 200);
-        }
+    public function readAllRoles()
+    {
+        $this->authorize('viewAny', Role::class);
+
+        $roles = Role::all();
+        return response()->json($roles);
     }
 
+    public function readRole($id)
+    {
+        $role = Role::findOrFail($id);
+        $this->authorize('view', $role);
 
-    //Read Role(id)
-    public function readRole($id){
-        try{
-            $role = Role::findOrFail($id);
-            return response()->json($role);
-        }
-        catch(\Exception $exception){
-            return response()->json([
-                'error'=>'Failed to fetch the Role.',
-                'message'=>$exception->getMessage()
-            ], 200);
-        }
+        return response()->json($role);
     }
 
-    //Update role(id)
-    public function updateRole(Request $request, $id){
+    public function updateRole(Request $request, $id)
+    {
+        $role = Role::findOrFail($id);
+        $this->authorize('update', $role);
+
         $validated = $request->validate([
-            'name'=>'required|string|unique:roles,name',
-            'description'=>'nullable|string|max:1000'
+            'name' => 'required|string|unique:roles,name,' . $id,
+            'description' => 'nullable|string|max:1000'
         ]);
 
-        $role = Role::findOrFail($id);
         $role->name = $validated['name'];
-        $role->description = $validated['description'];
-        try{
-            $role->save();
-            return response()->json([
-                'message'=>'Role Updated Successfully.'
-            ], 200);
-        }
-        catch(\Exception $exception){
-            return response()->json([
-                'error'=>'Failed to Update the Role.',
-                'message'=>$exception->getMessage()
-            ], 200);
-        }
+        $role->description = $validated['description'] ?? null;
+        $role->save();
+
+        return response()->json(['message' => 'Role Updated Successfully.'], 200);
     }
 
-    //Delete role(id)
-    public function deleteRole($id){
-        try{
-            $role = Role::findOrFail($id);
-            $role->delete();
-            return response('Role Deleted Successfully');
-        }
-        catch(\Exception $exception){
-            return response()->json([
-                'error'=>'Failed to Delete the Role.',
-                'message'=>$exception->getMessage()
-            ], 200);
-        }
+    public function deleteRole($id)
+    {
+        $role = Role::findOrFail($id);
+        $this->authorize('delete', $role);
+
+        $role->delete();
+        return response()->json(['message' => 'Role Deleted Successfully']);
     }
 }
